@@ -142,7 +142,7 @@ export default function Home() {
     try {
       const checkLeadResponse = await fetch(
         '/api/submit-lead?' +
-          new URLSearchParams({ firstName, phoneNumber }),
+          new URLSearchParams({ firstName, lastName, email, phoneNumber }),
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },

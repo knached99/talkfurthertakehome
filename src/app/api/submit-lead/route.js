@@ -20,6 +20,8 @@ export async function GET(request) {
       const { searchParams } = new URL(request.url);
   
       const firstName = searchParams.get('firstName');
+      const lastName = searchParams.get('lastName');
+      const email = searchParams.get('email');
       const phoneNumber = searchParams.get('phoneNumber');
   
       const query = new URLSearchParams();
@@ -51,12 +53,20 @@ export async function GET(request) {
 
         if(isNumberDuplicate) {
 
-            await emailTransporter.sendMail({
-                from: '"Lead Alerts" <talkfurther@assessment.com>',
-                to: 'talkfurthercandidate@email.com',
-                subject: 'Duplicate Lead Resubmitted',
-                text: `A lead with phone number ${phoneNumber} resubmitted the form.`,
-            });
+            try {
+                await emailTransporter.sendMail({
+                  from: '"Lead Alerts" <talkfurther@assessment.com>',
+                  to: 'talkfurthercandidate@email.com',
+                  subject: 'Duplicate Lead Resubmitted',
+                  text: `The following lead resubmitted the form:
+              Name: ${firstName} ${lastName}
+              Email: ${email}
+              Phone: ${phoneNumber}`,
+                });
+              } catch (error) {
+                console.error('Error sending email:', error);
+                toast.error('An error occurred while sending the email notification');
+              }
         }
   
       return NextResponse.json(data, { status: response.status });
