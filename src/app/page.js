@@ -1,12 +1,11 @@
 'use client';
 
-import {useState} from 'react';
-import {Toaster, toast} from 'react-hot-toast';
+import { useState } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 
 export default function Home() {
-
   const [formData, setFormData] = useState({
-    firstName: '', 
+    firstName: '',
     lastName: '',
     email: '',
     phoneNumber: '',
@@ -14,20 +13,23 @@ export default function Home() {
 
   const [errorMessages, setErrorMessages] = useState({});
 
-
   const validateFields = (name, value) => {
-    
     switch (name) {
-
       case 'firstName':
       case 'lastName':
         return value.trim() === '' ? 'This field is required' : '';
 
       case 'email':
-        return /\S+@\S+\.\S+/.test(value) ? '' : 'Enter a valid email address';
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(value.trim())
+          ? ''
+          : 'Enter a valid email address (e.g., example@domain.com)';
 
       case 'phoneNumber':
-        return /^\+?[0-9]{7,15}$/.test(value) ? '' : 'Enter a valid phone number';
+        const usPhoneRegex = /^(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+        return usPhoneRegex.test(value.trim())
+          ? ''
+          : 'Enter a valid US phone number (e.g., 1234567890, 123-456-7890, (123) 456-7890)';
 
       default:
         return '';
@@ -36,112 +38,114 @@ export default function Home() {
 
 
   const handleChange = (e) => {
-    
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value })); 
-  
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  /* This is the method that handles the form submission, 
-  if fields are validated successfully, that data is pushed to the GTM
-  */
+
+  /* This method submits user data to GTM and 
+  Zapier after successfully validating the inputs */
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = {};
+
+    const newErrorMessages = {};
+
     Object.keys(formData).forEach((key) => {
-      const errorMsg = validateFields(key, formData[key]);
-      if (errorMsg) newErrors[key] = errorMsg;
+      const errorMessage = validateFields(key, formData[key]);
+      if (errorMessage) newErrorMessages[key] = errorMessage;
     });
 
-    const hasErrors = Object.keys(newErrors).length > 0;
+    if (Object.keys(newErrorMessages).length > 0) {
+      setErrorMessages(newErrorMessages);
 
-    if (hasErrors) {
-      setErrorMessages(newErrors);
-    
-      // Push to GTM on failed submission
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'form_submission_error',
         ...formData,
-        errors: newErrors,
+        errors: newErrorMessages,
       });
 
-      toast.error('Please correct the highlighted fields.');
+      toast.error('Please correct the highlighted fields');
       return;
     }
 
-    const query = new URLSearchParams();
-    if (formData.firstName) query.append('search', formData.firstName);
-    if (formData.phoneNumber) query.append('search', formData.phoneNumber);
+    const { firstName, lastName, email, phoneNumber } = formData;
 
-    const url = `https://api.talkfurther.com/api/chat/leads?${query.toString()}`;
-
-    /* If this data is valid, push to Zapier
-    BUT, check if the lead already exists first */
     try {
-      // First, check if the lead already exists
-      const check_lead_response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Api-Key VIaVhMhV.n6V9Dq0nQhzsgB1OACYpbvmCIhPUfY94', // Your API key here
-        },
-        body: JSON.stringify({
-          community_id: "142430"
-        }),
-      }) 
-
-      const check_lead_result = await check_lead_response.json();
-      if (!check_lead_response.ok) {
-        throw new Error(`Failed to search leads: ${check_lead_result.error || check_lead_response.statusText}`);
-      }
-
-      const leads = check_lead_result?.results || []; // Volume and key names depend on API response
-      const exists = leads.some(lead =>
-        (email && lead.email === email) ||
-        (phoneNumber && lead.phone === phoneNumber)
+      const checkLeadResponse = await fetch(
+        '/api/submit-lead?' +
+          new URLSearchParams({ firstName, phoneNumber }),
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
       );
 
-      if (exists) {
-        toast.success('Lead already exists in Zapier!')
+      const checkLeadData = await checkLeadResponse.json();
+
+      if (!checkLeadResponse.ok) {
+        toast.error(
+          "An unexpected error was encountered! Don't worry, our team is on the fix!"
+        );
+        console.error(
+          `Lead search failed: ${checkLeadData.error || checkLeadResponse.statusText}`
+        );
+        return;
       }
-      else {
-        const create_lead_response = await fetch('https://api.talkfurther.com/api/chat/leads/ingestion/zapier-webhook', {
+
+      const leads = checkLeadData.results || [];
+
+      const leadExists = leads.some(
+        (lead) =>
+          (email && lead.email === email) ||
+          (phoneNumber && lead.phone === phoneNumber)
+      );
+
+      if (leadExists) {
+        toast.success('You are already in Zapier!');
+      } else {
+        const createLeadResponse = await fetch('/api/submit-lead', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer VIaVhMhV.n6V9Dq0nQhzsgB1OACYpbvmCIhPUfY94', // Your API key here
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            phone: formData.phoneNumber,
-            community_id: "142430",  // Your community ID
+            first_name: firstName,
+            last_name: lastName,
+            email,
+            phone: phoneNumber,
+            community_id: '142430',
           }),
         });
-        if (create_lead_response.ok) {
-          toast.success('Form submitted and sent to Zapier!');
-        }
-        else {
-          throw new Error('Zapier request failed');
-        }
-      }
-  }
-  catch (err) {
-    // Log failure in GTM
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'form_submission_error',
-      ...formData,
-      errorMessage: err.message,
-    });
 
-    toast.error('Zapier request failed. Try again later.');
-  }
-  setFormData({ firstName: '', lastName: '', email: '', phoneNumber: '' });
-  setErrorMessages({});
+        if (!createLeadResponse.ok) {
+          const error = await createLeadResponse.text();
+
+          console.error('Zapier API Error: ', {
+            status: createLeadResponse.status,
+            statusText: createLeadResponse.statusText,
+            body: error,
+          });
+
+          toast.error('Whoops! Something went wrong while creating the lead!');
+          return;
+        }
+
+        toast.success('Thank you, your information has been sent over to Zapier!');
+
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+        });
+        setErrorMessages({});
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast.error('Something went wrong. Please try again later.');
+    }
   };
+  
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex items-center justify-center p-6">
@@ -159,37 +163,49 @@ export default function Home() {
             placeholder="First Name"
             value={formData.firstName}
             onChange={handleChange}
-            className="text-slate-950 font-bold border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`text-slate-950 font-bold border rounded xl px-4 py-3 focus:outline-none focus:ring-2 ${errorMessages.firstName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
           />
+
+          {errorMessages.firstName && (<p className="text-red-500 text-md mt-1">{errorMessages.firstName}</p>)}
+
           <input
             type="text"
             name="lastName"
             placeholder="Last Name"
             value={formData.lastName}
             onChange={handleChange}
-            className="text-slate-950 font-bold border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`text-slate-950 font-bold border rounded xl px-4 py-3 focus:outline-none focus:ring-2 ${errorMessages.lastName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
           />
+
+          {errorMessages.lastName && (<p className="text-red-500 text-md mt-1">{errorMessages.lastName}</p>)}
+
           <input
-            type="email"
+            type="text"
             name="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="text-slate-950 font-bold border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`text-slate-950 font-bold border rounded xl px-4 py-3 focus:outline-none focus:ring-2 ${errorMessages.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
           />
+
+          {errorMessages.email && (<p className="text-red-500 text-md mt-1">{errorMessages.email}</p>)}
+
           <input
             type="tel"
             name="phoneNumber"
             placeholder="Phone Number"
             value={formData.phoneNumber}
             onChange={handleChange}
-            className="text-slate-950 font-bold border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`text-slate-950 font-bold border rounded xl px-4 py-3 focus:outline-none focus:ring-2 ${errorMessages.phoneNumber ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
           />
+
+        {errorMessages.phoneNumber && (<p className="text-red-500 text-md mt-1">{errorMessages.phoneNumber}</p>)}
+        
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-all font-semibold"
+          className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 hover:cursor-pointer transition-all font-semibold"
         >
           Submit
         </button>
