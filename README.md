@@ -108,24 +108,24 @@ This logic is used to prevent the creation of a new lead and ensures the team is
 
 When you visit http://localhost:3000, you will be greeted with this form:
 
-![Alt text](./public/images/talkFurtherTakehomeSS1.png)
+![Home Page](./public/images/talkFurtherTakehomeSS1.png)
 
 If you have errors, this is what the form will look like, prompting you to correct the highlighted fields:
 
-![Alt text](./public/images/talkFurtherTakehomeErrorSS.png)
+![Form Validation Errors](./public/images/talkFurtherTakehomeErrorSS.png)
 
 This is the message that will be shown if a lead exists in Zapier 
 
-![Alt text](./public/images/talkFurtherTakehomeLeadExists.png)
+![Lead Exists](./public/images/talkFurtherTakehomeLeadExists.png)
 
 This message will be shown once a new lead is generated
-[!Alt text](./public/images/talkFurtherTakehomeLeadGeneratedSS.png)
+![New Lead Generated](./public/images/talkFurtherTakehomeLeadGeneratedSS.png)
 
 
 Using Postman to ensure that API calls were successful, you can see the newly generated lead here:
 
-[!Alt text](./public/images/talkFurtherTakehomePostmanAPICall.png)
+![Postman API Call](./public/images/talkFurtherTakehomePostmanAPICall.png)
 
 On invalid email or phone number validation, data is inserted into Gooelsheets as you can see here:
 
-[!Alt text](./public/images/talkFurtherTakehomeGoogleSheetsDataInsertion.png)
+![Googlesheets Data Insertion](./public/images/talkFurtherTakehomeGoogleSheetsDataInsertion.png)
