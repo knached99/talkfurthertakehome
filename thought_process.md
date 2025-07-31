@@ -112,6 +112,8 @@ I wrote this logic in my GET request in ``` route.js ```
 the below code snippet checks if the entered number is found in a lead, if so, 
 send out the email notification via MailHog. 
 
+First, the phone number is normalized to strip if of the dashes or parenthesis so is only a number
+
 
 ```
 const isNumberDuplicate = data.results?.some((lead) => 
