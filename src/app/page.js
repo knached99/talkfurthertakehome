@@ -185,8 +185,8 @@ export default function Home() {
         onSubmit={handleSubmit}
         className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md space-y-6 border border-blue-100"
       >
-        <h2 className="text-2xl font-bold text-slate-900 text-center">Trigger Google Tag Manager!</h2>
-        <p className="text-lg font-normal mb-2 text-slate-950 text-justify">Fill out the form below and GTM will get your data right away!</p>
+        <h2 className="text-2xl font-bold text-slate-900 text-center">Fire up the magic with GTM & Zapier!</h2>
+        <p className="text-lg font-semibold text-indigo-600 mb-2 text-justify">Fill out the form below and watch GTM and Zapier do their happy dance!</p>
         <div className="flex flex-col space-y-4">
           <input
             type="text"
@@ -237,7 +237,7 @@ export default function Home() {
           <button
           type="submit"
           disabled={submitting}
-          className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold transition-all ${
+          className={`w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 hover:cursor-pointer text-white py-3 rounded-xl font-semibold transition-all ${
             submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
           }`}
         >
