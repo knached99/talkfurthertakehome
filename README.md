@@ -131,7 +131,7 @@ We use the tag assistant to connect to the http://localhost:3000/ URL to send th
 
 ![Connecting to GTM](./public/images/talkFurtherTakeHomeConnectingGTM.png)
 
-Next we open up the GTM debug page to collect the data after filling out the form, and send it to GTM
+Next we open up the GTM debug page to collect the data after filling out the form, and send it to GTM. Note the bottom left where it says (1 issue), ignore that as that is because of the GTM. Everything will work as expected however.
 
 ![Opening GTM debug page](./public/images/talkFurtherTakeHomeGTMDebugPage.png)
 
