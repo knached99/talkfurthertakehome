@@ -99,17 +99,6 @@ export default function Home() {
 
       if(emailError || phoneNumberError) {
 
-      // For task 1, send data into GTM on invalid email or phone validation 
-
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'lead_form_submitted', 
-        firstName, 
-        lastName, 
-        email, 
-        phoneNumber,
-      });
-
       // For task 2, Insert data into Google Sheets upon invalid email or phone validation 
       
       const sheetURL = new URL(googleSheetURL);
@@ -214,6 +203,18 @@ export default function Home() {
           return;
          
         }
+
+      /* Task 1, on successful form submission, event is triggered in GTM which then sends 
+      that info over to Google Analytics to display said event as as conversion 
+      */
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'lead_form_submitted', 
+        firstName, 
+        lastName, 
+        email, 
+        phoneNumber,
+      });
 
         toast.success('Thank you, your information has been sent over to Zapier!');
 
