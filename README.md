@@ -124,7 +124,7 @@ This message will be shown once a new lead is generated
 
 Using Postman to ensure that API calls were successful, you can see the newly generated lead here:
 
-![Postman API Call](./public/images/talkFurtherTakehomePostmanAPICall.png)
+![Postman API Call](./public/images/talkFurtherTakehomePostmanAPICallSS.png)
 
 On invalid email or phone number validation, data is inserted into Gooelsheets as you can see here:
 
