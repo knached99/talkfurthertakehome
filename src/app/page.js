@@ -11,6 +11,10 @@ export default function Home() {
     phoneNumber: '',
   });
 
+  // will use this state to show or hide the loading indicator on form submission 
+
+  const [submitting, setSubmitting] = useState(false); 
+
   const [errorMessages, setErrorMessages] = useState({});
 
   const validateFields = (name, value) => {
@@ -45,9 +49,10 @@ export default function Home() {
 
   /* This method submits user data to GTM and 
   Zapier after successfully validating the inputs */
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     const newErrorMessages = {};
 
@@ -67,11 +72,13 @@ export default function Home() {
       });
 
       toast.error('Please correct the highlighted fields');
+      setSubmitting(false);
       return;
     }
 
-    const { firstName, lastName, email, phoneNumber } = formData;
-
+    const { firstName, lastName, email } = formData;
+    const phoneNumber = formData.phoneNumber.replace(/\D/g, '');
+    
     try {
       const checkLeadResponse = await fetch(
         '/api/submit-lead?' +
@@ -91,20 +98,24 @@ export default function Home() {
         console.error(
           `Lead search failed: ${checkLeadData.error || checkLeadResponse.statusText}`
         );
+        setSubmitting(false);
         return;
       }
 
       const leads = checkLeadData.results || [];
 
       const leadExists = leads.some(
-        (lead) =>
-          (email && lead.email === email) ||
-          (phoneNumber && lead.phone === phoneNumber)
+          (lead) =>
+          (email && lead.email?.toLowerCase() === email.toLowerCase()) ||
+          (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
       );
 
       if (leadExists) {
         toast.success('You are already in Zapier!');
-      } else {
+        setSubmitting(false);
+      } 
+      
+      else {
         const createLeadResponse = await fetch('/api/submit-lead', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -127,10 +138,25 @@ export default function Home() {
           });
 
           toast.error('Whoops! Something went wrong while creating the lead!');
+          setSubmitting(false);
           return;
+         
         }
 
         toast.success('Thank you, your information has been sent over to Zapier!');
+
+        /* After data has been successfully sent over to Zapier, 
+          we will send it into the Google Tag Manager (GTM for short)
+        */ 
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'lead_form_submitted', 
+          firstName, 
+          lastName, 
+          email, 
+          phoneNumber,
+        });
+
 
         setFormData({
           firstName: '',
@@ -144,6 +170,11 @@ export default function Home() {
       console.error('Unexpected error:', err);
       toast.error('Something went wrong. Please try again later.');
     }
+
+    finally {
+      setSubmitting(false);
+    }
+
   };
   
 
@@ -203,12 +234,38 @@ export default function Home() {
         
         </div>
 
-        <button
+          <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 hover:cursor-pointer transition-all font-semibold"
+          disabled={submitting}
+          className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold transition-all ${
+            submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+          }`}
         >
-          Submit
+          {submitting && (
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+              ></path>
+            </svg>
+          )}
+          {submitting ? 'Please Wait...' : 'Submit'}
         </button>
+
       </form>
     </main>
   );
