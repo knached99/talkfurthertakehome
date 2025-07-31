@@ -6,7 +6,7 @@ const GET_BASE_URL = 'https://api.talkfurther.com/api/chat/leads';
 const POST_BASE_URL = 'https://api.talkfurther.com/api/chat/leads/ingestion/zapier-webhook';
 
 
-// We will be using mailhog as the email provider 
+// We will be using mailhog as the email provider, this is for task 3 
 
 const emailTransporter = nodemailer.createTransport({
 

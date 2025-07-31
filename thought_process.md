@@ -6,9 +6,11 @@ Once I created the form, I set up Google Analytics to keep track of user data. I
 
 To link the web form and Google Tag Manager together, I inserted a script for the specific tag in layout.js. This creates a data layer in the web page that gets activated when I submit data in the form. When this happends, the data layer will retrieve all the form data and send it to Google Analytics.
 
+
+
 Task 2
 
-In order to verify if a user exists in Zapier and to add their information if it is not present, I made two separate API calls. These API calls both require a community_id, "142430", which indicates which community they belong to in the Zapier system. If both calls succeed, a Toast will open up indicating success. Else, if an error happens at any step, an error pop-up will appear
+In order to verify if a user exists in Zapier and to add their information if it is not present, I made two separate API calls. These API calls both require a community_id, "142430", which indicates which community they belong to in the Zapier system. If both calls succeed, a Toast will open up indicating success. Else, if an error happens at any step, an error pop up will appear
 
 First, I changed the logic in layout.js so that the call to the data layer only happens if the tag does not exist yet in Zapier. The first API call is a GET call to `https://api.talkfurther.com/api/chat/leads?${query.toString()}`, which will check if the email and phone number query already exists for a specific lead. A lead has information about a specific user in Zapier. If that lead exists, then there is no need to update information.
 
@@ -33,6 +35,9 @@ First, I changed the logic in layout.js so that the call to the data layer only 
         (email && lead.email === email) ||
         (phoneNumber && lead.phone === phoneNumber)
       );
+
+To check to see if data is inserted into Google Analytics, I visited: https://tagassistant.google.com/
+then clicked on "Add Domain" then entered the following domain: http://localhost:3000
 
 The second API call is `https://api.talkfurther.com/api/chat/leads/ingestion/zapier-webhook`, which will run a POST call to update a lead for a user with their first name, last name, email, and phone number.
 
