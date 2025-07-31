@@ -22,15 +22,28 @@ export default function RootLayout({ children }) {
     <html lang="en">
 
       <head>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VW4LJV81L7"></script>
-        <script>
+
+        {/* Using NextJS <Script> instead of <script> to avoid NextJS hydration issues */}
+        {/* You may see this error on page load: 
+        
+        A tree hydrated but some attributes of the server rendered 
+        HTML didn't match the client properties. This won't be patched up. 
+        This can happen if a SSR-ed Client Component used. 
+        This is caused by a Chrome Extension 
+        you can ignore it as it does not cause issues with the functionality, 
+        you may also open up the web page in incognito and the error will dissappear 
+        */}
+
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VW4LJV81L7" strategy="afterInteractive"/>
+
+        <Script id="gtag-init" strategy="afterInteractive">
         {`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments)}
         gtag('js', new Date());
         gtag('config', 'G-VW4LJV81L7');
         `}
-        </script>
+        </Script>
 
       </head>
 

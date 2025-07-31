@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 
 export default function Home() {
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -12,10 +13,13 @@ export default function Home() {
   });
 
   // will use this state to show or hide the loading indicator on form submission 
-
   const [submitting, setSubmitting] = useState(false); 
 
   const [errorMessages, setErrorMessages] = useState({});
+
+  const googleSheetURL = new URL(
+    'https://script.google.com/macros/s/AKfycbx87mJclbp1j4tJJnBUpEFfo2W5lKv_UQx05KbrhDn8vooHYOeFMsKJ7puA5l4Tccmxfg/exec'
+  );
 
   const validateFields = (name, value) => {
     switch (name) {
@@ -47,20 +51,34 @@ export default function Home() {
   };
 
 
-  /* This method submits user data to GTM and 
-  Zapier after successfully validating the inputs */
+  /*
+   This method does the following:
+
+   If user inputs are invalid, it submits the data over to both 
+   GTM AND Google Sheets 
+
+   if the data is valid, it does not do that, it instead looks inside of Zapier, 
+   if that data is there (known as a lead) then it does not do anything, 
+   if that data (lead) is not inside of Zapier, then it sends it over to Zapier 
+  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    
 
     const newErrorMessages = {};
+
+    const { firstName, lastName, email } = formData;
+    const phoneNumber = formData.phoneNumber.replace(/\D/g, '');
+
 
     Object.keys(formData).forEach((key) => {
       const errorMessage = validateFields(key, formData[key]);
       if (errorMessage) newErrorMessages[key] = errorMessage;
     });
 
+  
     if (Object.keys(newErrorMessages).length > 0) {
       setErrorMessages(newErrorMessages);
 
@@ -73,11 +91,53 @@ export default function Home() {
 
       toast.error('Please correct the highlighted fields');
       setSubmitting(false);
+
+
+      const emailError = newErrorMessages.email; 
+      const phoneNumberError = newErrorMessages.phoneNumber; 
+
+
+      if(emailError || phoneNumberError) {
+
+      // For task 1, send data into GTM on invalid email or phone validation 
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'lead_form_submitted', 
+        firstName, 
+        lastName, 
+        email, 
+        phoneNumber,
+      });
+
+      // For task 2, Insert data into Google Sheets upon invalid email or phone validation 
+      
+      const sheetURL = new URL(googleSheetURL);
+
+      sheetURL.searchParams.append('firstName', firstName);
+      sheetURL.searchParams.append('lastName', lastName);
+      sheetURL.searchParams.append('email', email);
+      sheetURL.searchParams.append('phoneNumber', phoneNumber);
+
+      try {
+
+        await fetch(sheetURL.toString(), {
+
+          method: 'GET', 
+          mode: 'no-cors', 
+        });
+      }
+
+      catch(err) {
+        console.warn('Google Sheets insertion failed: ', err);
+      }
+
+    }
+
       return;
     }
 
-    const { firstName, lastName, email } = formData;
-    const phoneNumber = formData.phoneNumber.replace(/\D/g, '');
+  
     
     try {
       const checkLeadResponse = await fetch(
@@ -104,11 +164,23 @@ export default function Home() {
 
       const leads = checkLeadData.results || [];
 
+
+      /* Task 3, prevent number from getting deduplicated and from generating a new lead, 
+      instead send an email notification to notify that a lead has revisted the form 
+      */ 
+
+      const checkIfNumberExists = leads.some(
+        (lead) =>
+        (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
+      );
+
       const leadExists = leads.some(
           (lead) =>
           (email && lead.email?.toLowerCase() === email.toLowerCase()) ||
           (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
       );
+
+
 
       if (leadExists) {
         toast.success('You are already in Zapier!');
@@ -144,19 +216,6 @@ export default function Home() {
         }
 
         toast.success('Thank you, your information has been sent over to Zapier!');
-
-        /* After data has been successfully sent over to Zapier, 
-          we will send it into the Google Tag Manager (GTM for short)
-        */ 
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'lead_form_submitted', 
-          firstName, 
-          lastName, 
-          email, 
-          phoneNumber,
-        });
-
 
         setFormData({
           firstName: '',

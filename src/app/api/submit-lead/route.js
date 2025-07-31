@@ -1,10 +1,19 @@
 import {NextResponse} from 'next/server';
-
+import nodemailer from 'nodemailer'; // for task 3 
 
 const API_KEY = process.env.TALKFURTHER_API_KEY; 
 const GET_BASE_URL = 'https://api.talkfurther.com/api/chat/leads';
 const POST_BASE_URL = 'https://api.talkfurther.com/api/chat/leads/ingestion/zapier-webhook';
 
+
+// We will be using mailhog as the email provider 
+
+const emailTransporter = nodemailer.createTransport({
+
+    host: 'localhost', 
+    port: 1025, 
+    secure: false 
+});
 
 export async function GET(request) {
     try {
@@ -27,6 +36,28 @@ export async function GET(request) {
       });
   
       const data = await response.json();
+
+      /* 
+        for task 3, we will check for duplicate numbers, 
+        so if a lead with the same phone number resubmits themselves,
+         a new lead is not created. Instead an email notification is sent
+        out to notify that a lead has revisited the form.
+      */
+
+        const normalizedNumber = phoneNumber?.replace(/\D/g, '');
+        const isNumberDuplicate = data.results?.some((lead) => 
+            lead.phone?.replace(/\D/g, '') === normalizedNumber
+        );
+
+        if(isNumberDuplicate) {
+
+            await emailTransporter.sendMail({
+                from: '"Lead Alerts" <talkfurther@assessment.com>',
+                to: 'talkfurthercandidate@email.com',
+                subject: 'Duplicate Lead Resubmitted',
+                text: `A lead with phone number ${phoneNumber} resubmitted the form.`,
+            });
+        }
   
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
