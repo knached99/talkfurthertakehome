@@ -126,6 +126,20 @@ Using Postman to ensure that API calls were successful, you can see the newly ge
 
 ![Postman API Call](./public/images/talkFurtherTakehomePostmanAPICallSS.png)
 
+
+We use the tag assistant to connect to the http://localhost:3000/ URL to send the ```lead_form_submitted``` event 
+
+![Connecting to GTM](./public/images/talkFurtherTakeHomeConnectingGTM.png)
+
+Next we open up the GTM debug page to collect the data after filling out the form, and send it to GTM
+
+![Opening GTM debug page](./public/images/talkFurtherTakeHomeGTMDebugPage.png)
+
+As you can see here, the data is sent to GTM after successful form validation 
+
+![Data sent to GTM](./public/images/talkFurtherTakeHomeGTMDataLayerHit.png)
+
 On invalid email or phone number validation, data is inserted into Gooelsheets as you can see here:
 
 ![Googlesheets Data Insertion](./public/images/talkFurtherTakehomeGoogleSheetsDataInsertion.png)
+
