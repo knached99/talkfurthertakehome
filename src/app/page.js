@@ -37,7 +37,7 @@ export default function Home() {
         const usPhoneRegex = /^(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
         return usPhoneRegex.test(value.trim())
           ? ''
-          : 'Enter a valid US phone number (e.g., 1234567890, 123-456-7890, (123) 456-7890)';
+          : 'Enter a valid US phone number (e.g., 1234567890, 123-456-7890, (123)-456-7890 )';
 
       default:
         return '';
