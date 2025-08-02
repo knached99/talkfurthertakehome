@@ -78,7 +78,6 @@ export default function Home(){
       const handleSubmit = async (e) => {
 
         e.preventDefault();
-        setSubmitting(true);
 
 
         const newErrorMessages = {};
@@ -122,11 +121,11 @@ export default function Home(){
             }
 
             catch(error){
+              toast.error('An unexpected error occurred but don\'t worry, our developers are on the fix!');
               console.warn(`Google Sheets insertion failed due to the following error: ${error}`);
             }
           }
 
-          setSubmitting(false);
           return;
         }
 
@@ -143,7 +142,8 @@ export default function Home(){
         try{
           
         // now, we're gonna check to see if a lead exists in Zapier 
-
+        setSubmitting(true);
+        setErrorMessages({});
         const checkLeadResponse = await fetch(
             '/api/submit-lead?' +
               new URLSearchParams({ firstName, lastName, email, phoneNumber }),

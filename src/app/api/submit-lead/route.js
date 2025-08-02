@@ -4,8 +4,7 @@ import nodemailer from 'nodemailer'; // for task 3
 const API_KEY = process.env.TALKFURTHER_API_KEY; 
 const GET_BASE_URL = 'https://api.talkfurther.com/api/chat/leads';
 const POST_BASE_URL = 'https://api.talkfurther.com/api/chat/leads/ingestion/zapier-webhook';
-
-
+const {getDuplicateLeadEmail} = require('../../emails/duplicateLead');
 // We will be using mailhog as the email provider, this is for task 3 
 
 const emailTransporter = nodemailer.createTransport({
@@ -26,7 +25,6 @@ export async function GET(request) {
   
       const query = new URLSearchParams();
   
-      if (firstName) query.append('search', firstName);
       if (phoneNumber) query.append('search', phoneNumber);
   
       const response = await fetch(`${GET_BASE_URL}?${query.toString()}`, {
@@ -45,7 +43,7 @@ export async function GET(request) {
          a new lead is not created. Instead an email notification is sent
         out to notify that a lead has revisited the form.
       */
-
+      
         const normalizedNumber = phoneNumber?.replace(/\D/g, '');
         const isNumberDuplicate = data.results?.some((lead) => 
             lead.phone?.replace(/\D/g, '') === normalizedNumber
@@ -58,11 +56,9 @@ export async function GET(request) {
                   from: '"Lead Alerts" <talkfurther@assessment.com>',
                   to: 'talkfurthercandidate@email.com',
                   subject: 'Duplicate Lead Resubmitted',
-                  text: `The following lead resubmitted the form:
-              Name: ${firstName} ${lastName}
-              Email: ${email}
-              Phone: ${phoneNumber}`,
+                  html: getDuplicateLeadEmail({firstName, lastName, email, phoneNumber}),
                 });
+
               } catch (error) {
                 console.error('Error sending email:', error);
                 toast.error('An error occurred while sending the email notification');
