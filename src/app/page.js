@@ -1,242 +1,255 @@
 'use client';
 
-import { useState } from 'react';
-import { Toaster, toast } from 'react-hot-toast';
+import {useState} from 'react';
+import {Toaster, toast} from 'react-hot-toast';
 
-export default function Home() {
+
+export default function Home(){
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
+    
+    firstName: '', 
+    lastName: '', 
+    email: '', 
     phoneNumber: '',
   });
 
-  // will use this state to show or hide the loading indicator on form submission 
-  const [submitting, setSubmitting] = useState(false); 
+  /* 
+    This assessment will be broken up into 4 tasks and
+     I will briefly discuss an overview here. 
+     
+    Task 1 -> Needed to create a webform that collects the following data: firstName, lastName, 
+    email, and phoneNumber, I added form validation to ensure that the correct data is sent. 
+    After successful form validation, I had setup GTM and GA4 so that the data is sent into GTM and then tracked as a conversion in Google Analytics 
 
+
+    Task 2 -> We need to call the Talkfurther APIs to do the following:
+
+    Upon successful valdition of the email and phone number, we push the data into Further via the Zapier woobhook POST call, 
+
+    if those fields are not valid, then we push them into Google Sheets 
+
+
+   Task 3 -> We use deduplication logic to prevent a duplicate lead entry in Zapier. Also, if a lead exists in Zapier (looking it up by checking email or phone number) and if so, we email a notification to the user informing them that 
+   the lead has revisited the form. 
+
+
+   Task 4 -> We ensure a great user experience and developer experience by utilizing NextJS and TailwindCSS. 
+ 
+    */
+
+
+
+  // this state will track the loading state once a form is submitted
+  const [submitting, setSubmitting] = useState(false); 
   const [errorMessages, setErrorMessages] = useState({});
 
-  const googleSheetURL = new URL(
-    'https://script.google.com/macros/s/AKfycbx87mJclbp1j4tJJnBUpEFfo2W5lKv_UQx05KbrhDn8vooHYOeFMsKJ7puA5l4Tccmxfg/exec'
-  );
 
-  const validateFields = (name, value) => {
-    switch (name) {
-      case 'firstName':
-      case 'lastName':
-        return value.trim() === '' ? 'This field is required' : '';
-
-      case 'email':
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(value.trim())
-          ? ''
-          : 'Enter a valid email address (e.g., example@domain.com)';
-
-      case 'phoneNumber':
-        const usPhoneRegex = /^(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
-        return usPhoneRegex.test(value.trim())
-          ? ''
-          : 'Enter a valid US phone number (e.g., 1234567890, 123-456-7890, (123)-456-7890 )';
-
-      default:
-        return '';
-    }
-  };
+  const googleSheetURL = new URL('https://script.google.com/macros/s/AKfycbx87mJclbp1j4tJJnBUpEFfo2W5lKv_UQx05KbrhDn8vooHYOeFMsKJ7puA5l4Tccmxfg/exec');
 
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-
-  /*
-   This method does the following:
-
-   If user inputs are invalid, it submits the data over to both 
-   GTM AND Google Sheets 
-
-   if the data is valid, it does not do that, it instead looks inside of Zapier, 
-   if that data is there (known as a lead) then it does not do anything, 
-   if that data (lead) is not inside of Zapier, then it sends it over to Zapier 
-  */
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    
-
-    const newErrorMessages = {};
-
-    const { firstName, lastName, email } = formData;
-    const phoneNumber = formData.phoneNumber.replace(/\D/g, '');
-
-
-    Object.keys(formData).forEach((key) => {
-      const errorMessage = validateFields(key, formData[key]);
-      if (errorMessage) newErrorMessages[key] = errorMessage;
-    });
-
-  
-    if (Object.keys(newErrorMessages).length > 0) {
-      setErrorMessages(newErrorMessages);
-
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'form_submission_error',
-        ...formData,
-        errors: newErrorMessages,
-      });
-
-      toast.error('Please correct the highlighted fields');
-      setSubmitting(false);
-
-
-      const emailError = newErrorMessages.email; 
-      const phoneNumberError = newErrorMessages.phoneNumber; 
-
-
-      if(emailError || phoneNumberError) {
-
-      // For task 2, Insert data into Google Sheets upon invalid email or phone validation 
-      
-      const sheetURL = new URL(googleSheetURL);
-
-      sheetURL.searchParams.append('firstName', firstName);
-      sheetURL.searchParams.append('lastName', lastName);
-      sheetURL.searchParams.append('email', email);
-      sheetURL.searchParams.append('phoneNumber', phoneNumber);
-
-      try {
-
-        await fetch(sheetURL.toString(), {
-
-          method: 'GET', 
-          mode: 'no-cors', 
-        });
-      }
-
-      catch(err) {
-        console.warn('Google Sheets insertion failed: ', err);
-      }
-
-    }
-
-      return;
-    }
-
-  
-    
-    try {
-      const checkLeadResponse = await fetch(
-        '/api/submit-lead?' +
-          new URLSearchParams({ firstName, lastName, email, phoneNumber }),
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+    const validateFields = (name, value) => {
+        switch (name) {
+          case 'firstName':
+          case 'lastName':
+            return value.trim() === '' ? 'This field is required' : '';
+          case 'email':
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailRegex.test(value.trim())
+              ? ''
+              : 'Enter a valid email address (e.g., example@domain.com)';
+          case 'phoneNumber':
+            const usPhoneRegex = /^(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+            return usPhoneRegex.test(value.trim())
+              ? ''
+              : 'Enter a valid US phone number (e.g., 1234567890, 123-456-7890, (123)-456-7890 )';
+          default:
+            return '';
         }
-      );
+      };
 
-      const checkLeadData = await checkLeadResponse.json();
+      // Handles changes made to an input field 
 
-      if (!checkLeadResponse.ok) {
-        toast.error(
-          "An unexpected error was encountered! Don't worry, our team is on the fix!"
-        );
-        console.error(
-          `Lead search failed: ${checkLeadData.error || checkLeadResponse.statusText}`
-        );
-        setSubmitting(false);
-        return;
+      const handleChange = (e) => {
+          const {name, value} = e.target;
+          setFormData((prev) => ({...prev, [name]: value}));
       }
 
-      const leads = checkLeadData.results || [];
+      const handleSubmit = async (e) => {
+
+        e.preventDefault();
+        setSubmitting(true);
 
 
-      /* Task 3, prevent number from getting deduplicated and from generating a new lead, 
-      instead send an email notification to notify that a lead has revisted the form 
-      */ 
+        const newErrorMessages = {};
+        
+          Object.keys(formData).forEach((key) => {
 
-      const checkIfNumberExists = leads.some(
-        (lead) =>
-        (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
-      );
+          const errorMessage = validateFields(key, formData[key]);
 
-      const leadExists = leads.some(
-          (lead) =>
-          (email && lead.email?.toLowerCase() === email.toLowerCase()) ||
-          (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
-      );
-
-
-
-      if (leadExists) {
-        toast.success('You are already in Zapier!');
-        setSubmitting(false);
-      } 
-      
-      else {
-        const createLeadResponse = await fetch('/api/submit-lead', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            phone: phoneNumber,
-            community_id: '142430',
-          }),
+          if(errorMessage) newErrorMessages[key] = errorMessage;
+        
         });
 
-        if (!createLeadResponse.ok) {
-          const error = await createLeadResponse.text();
+        if(Object.keys(newErrorMessages).length > 0){
+          
+          setErrorMessages(newErrorMessages);
 
-          console.error('Zapier API Error: ', {
-            status: createLeadResponse.status,
-            statusText: createLeadResponse.statusText,
-            body: error,
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'form_submission_error',
+            ...formData, 
+            errors: newErrorMessages, 
           });
 
-          toast.error('Whoops! Something went wrong while creating the lead!');
+          toast.error('Please correct the highlighted fields');
+
+          // If email or phone number are invalid, then we send that data over to Google Sheets
+          if(newErrorMessages.email || newErrorMessages.phoneNumber){
+
+            try{
+
+              const sheetURL = new URL(googleSheetURL);
+                sheetURL.searchParams.append('firstName', formData.firstName);
+                sheetURL.searchParams.append('lastName', formData.lastName);
+                sheetURL.searchParams.append('email', formData.email);
+                sheetURL.searchParams.append('phoneNumber', formData.phoneNumber.replace(/\D/g, ''));
+
+                await fetch(sheetURL.toString(), {
+                  method: 'GET',
+                  mode: 'no-cors',
+                });
+            }
+
+            catch(error){
+              console.warn(`Google Sheets insertion failed due to the following error: ${error}`);
+            }
+          }
+
           setSubmitting(false);
           return;
-         
         }
 
-      /* Task 1, on successful form submission, event is triggered in GTM which then sends 
-      that info over to Google Analytics to display said event as as conversion 
-      */
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'lead_form_submitted', 
-        firstName, 
-        lastName, 
-        email, 
-        phoneNumber,
-      });
+        /* If validation is successful, we proceed to do the following: 
+        1) Check if a lead exists
+        2) If a lead does not exist, generate a new lead in Zapier 
+        */
 
-        toast.success('Thank you, your information has been sent over to Zapier!');
+        const firstName = formData.firstName.trim();
+        const lastName = formData.lastName.trim();
+        const email = formData.email.trim();
+        const phoneNumber = formData.phoneNumber.trim();
 
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phoneNumber: '',
-        });
-        setErrorMessages({});
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-      toast.error('Something went wrong. Please try again later.');
-    }
+        try{
+          
+        // now, we're gonna check to see if a lead exists in Zapier 
 
-    finally {
-      setSubmitting(false);
-    }
+        const checkLeadResponse = await fetch(
+            '/api/submit-lead?' +
+              new URLSearchParams({ firstName, lastName, email, phoneNumber }),
+            {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
 
-  };
-  
+          if(!checkLeadResponse.ok){
+            
+            const errorData = await checkLeadResponse.json().catch(() => ({}));
+
+            toast.error("An unexpected error was encountered but don't worry, our team is on the fix!");
+            console.error(`Lead search failed: ${errorData.error || checkLeadResponse.statusText}`); 
+            setSubmitting(false); 
+            return;
+            
+          }
+
+          const {results: leads = []} = await checkLeadResponse.json();
+          
+          const leadExists = leads.some(
+            
+            (lead) =>
+              (email && lead.email?.toLowerCase() === email.toLowerCase()) ||
+              (phoneNumber && lead.phone?.replace(/\D/g, '') === phoneNumber)
+          );
+
+          if(leadExists) {
+            toast.success('You are already in Zapier!');
+            setSubmitting(false);
+            return;
+          }
+
+
+          // Since a lead does not exist, we will proceed to generate a new lead 
+
+          const createLeadResponse = await fetch('/api/submit-lead', {
+            
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({
+              first_name: firstName, 
+              last_name: lastName, 
+              email, 
+              phone: phoneNumber, 
+              community_id: '142430',
+            }),
+          });
+
+          if(!checkLeadResponse.ok){
+
+            const errorMsg = await createLeadResponse.text();
+            
+            console.error('Zapier API Error: ', {
+              status: createLeadResponse.status, 
+              statusText: createLeadResponse.status, 
+              body: errorMsg, 
+            });
+
+            toast.error("Whoops! Something went wrong while creating the lead! Don't worry, our devs are on the fix!");
+            setSubmitting(false);
+            return;
+
+          } 
+
+          /* on successful submission, we will push an event to GTM 
+          which will then send it off to Google Analytics 
+          */
+         window.dataLayer = window.dataLayer || [];
+         window.dataLayer.push({
+          event: 'lead_form_submitted',
+          firstName, 
+          lastName, 
+          email, 
+          phoneNumber, 
+         });
+
+         console.log('Pushing lead_form_submitted event with this data:', {
+          firstName, 
+          lastName, 
+          email, 
+          phoneNumber, 
+
+         });
+
+         toast.success('Thank you, your information has been sent over to Zapier!');
+         setFormData({firstName: '', lastName: '', email: '', phoneNumber: ''});
+         setErrorMessages({});
+        }
+
+        catch(error){
+
+          console.error(`An unexpected error was encountered: ${error}`);
+          toast.error('Something went wrong, please try again later!');
+        }
+
+        finally{
+
+          setSubmitting(false);
+
+        }
+
+      };
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex items-center justify-center p-6">

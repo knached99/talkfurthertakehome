@@ -29,21 +29,29 @@ export default function RootLayout({ children }) {
         A tree hydrated but some attributes of the server rendered 
         HTML didn't match the client properties. This won't be patched up. 
         This can happen if a SSR-ed Client Component used. 
-        This is caused by a Chrome Extension 
+        This is caused by a browser extension or when opening up the debug view in GTM.
         you can ignore it as it does not cause issues with the functionality, 
         you may also open up the web page in incognito and the error will dissappear 
         */}
 
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VW4LJV81L7" strategy="afterInteractive"/>
+   <Script id="gtm-script" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PPS96FC8');`}
+        </Script>
+{/* 
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-RV8566T7DX" strategy="afterInteractive"/>
 
         <Script id="gtag-init" strategy="afterInteractive">
         {`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments)}
         gtag('js', new Date());
-        gtag('config', 'G-VW4LJV81L7');
+        gtag('config', 'G-RV8566T7DX');
         `}
-        </Script>
+        </Script> */}
 
       </head>
 
@@ -52,7 +60,17 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
 
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-PPS96FC8"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
+        
         {children}
+        
       </body>
     </html>
   );

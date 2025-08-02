@@ -1,14 +1,20 @@
-Task 1
+## Task 1
 
 First, I created the web form. I did this using NextJS and TailwindCSS to create a simple design that was aesthetically pleasing and mobile responsive. In page.js, I coded the web form; I created validations for each of the form fields and created handlers for events including onSubmit and onChange.
 
-Once I created the form, I set up Google Analytics to keep track of user data. In Google Analytics, I went into the Admin dashboard and created a Property. This gave me a place to store all my measurement and user data. Once I finished this, it gave me a measurement id. I used this measurement id to create a tag for Google Analytics submission events in Google Tag Manager.
+Once I created the form, I set up Google Analytics to keep track of user data. In Google Analytics, I went into the Admin dashboard and created a Property. This gave me a place to store all my measurement and user data. Once I finished this, it gave me a measurementID. I used this measurementID to create a tag for Google Analytics submission events in Google Tag Manager.
 
 To link the web form and Google Tag Manager together, I inserted a script for the specific tag in layout.js. This creates a data layer in the web page that gets activated when I submit data in the form. When this happends, the data layer will retrieve all the form data and send it to Google Analytics.
 
+I faced some hurdles with Google Analytics v4 as GA4 no longer refers to Goals as "goals", instead they're referred to as "conversions" and the steps to create them have changed, so I had to follow several articles to get it right.
 
+1.  https://www.ruleranalytics.com/blog/analytics/google-analytics-conversion-tracking/
 
-Task 2
+2.  https://measureu.com/conversions-google-analytics-4/#:~:text=If%20you%20have%20set%20up,case%2C%20like%20%E2%80%9Csales_mail_click%E2%80%9D.
+
+3.  https://support.google.com/analytics/answer/13965727?hl=en&sjid=9318567089703391649-NA#zippy=%2Cwhy-are-conversions-being-renamed-to-key-events%2Cdo-key-events-and-conversions-share-the-same-attribution-settings%2Chow-do-i-create-google-ads-conversions-from-google-analytics-key-events%2Ccan-i-use-non-key-events-to-create-a-conversion%2Chow-many-google-ads-conversions-can-i-create%2Chow-do-i-edit-the-settings-of-google-ads-conversions%2Cdoes-this-change-affect-other-google-advertising-platforms-like-campaign-manager-and-display-video%2Cwill-my-google-ads-conversions-based-on-key-events-get-exported-through-bigquery
+
+## Task 2
 
 In order to verify if a user exists in Zapier and to add their information if it is not present, I made two separate API calls. These API calls both require a community_id, "142430", which indicates which community they belong to in the Zapier system. If both calls succeed, a Toast will open up indicating success. Else, if an error happens at any step, an error pop up will appear
 
@@ -52,31 +58,31 @@ The second API call is `https://api.talkfurther.com/api/chat/leads/ingestion/zap
             last_name: formData.lastName,
             email: formData.email,
             phone: formData.phoneNumber,
-            community_id: "142430", 
+            community_id: "142430",
           }),
         });
 
+As part of task 2, we also need to insert data into Google Sheets if the validation fails for
+email and phone number. To accomplish this, the first thing I did was create a new sheet by visiting sheets.google.com
 
-As part of task 2, we also need to insert data into Google Sheets if the validation fails for 
-email and phone number. To accomplish this, the first thing I did was create a new sheet by visiting sheets.google.com 
-
-I then created a new sheet and titled it ```talkfurtherassessment```, 
-to link that sheet with my web app, I had to add a script by navigating to the navbar in Google sheets and looking for "Extensions", 
-after clicking on that, I clicked on "Apps Script", I give that script a title and copy + paste the code from this site: 
+I then created a new sheet and titled it `talkfurtherassessment`,
+to link that sheet with my web app, I had to add a script by navigating to the navbar in Google sheets and looking for "Extensions",
+after clicking on that, I clicked on "Apps Script", I give that script a title and copy + paste the code from this site:
 https://measureschool.com/google-sheets-tracking-google-tag-manager/
 
-into the code editor, 
+into the code editor,
 
 I then deploy it by clicking on "Deploy", then "New Deployment" and fill out the fields and then click on "Deploy"
 
-I then modify my code in ```page.js``` and add the following on line 20:
-
-``` 
-const googleSheetURL = new URL(
-    'https://script.google.com/macros/s/AKfycbx87mJclbp1j4tJJnBUpEFfo2W5lKv_UQx05KbrhDn8vooHYOeFMsKJ7puA5l4Tccmxfg/exec'
-  ); 
+I then modify my code in `page.js` and add the following on line 20:
 
 ```
+const googleSheetURL = new URL(
+    'https://script.google.com/macros/s/AKfycbx87mJclbp1j4tJJnBUpEFfo2W5lKv_UQx05KbrhDn8vooHYOeFMsKJ7puA5l4Tccmxfg/exec'
+  );
+
+```
+
 From lines 115 to 133 I make a get request to the sheet and insert the following data:
 
 ```
@@ -91,8 +97,8 @@ From lines 115 to 133 I make a get request to the sheet and insert the following
 
         await fetch(sheetURL.toString(), {
 
-          method: 'GET', 
-          mode: 'no-cors', 
+          method: 'GET',
+          mode: 'no-cors',
         });
       }
 
@@ -101,22 +107,21 @@ From lines 115 to 133 I make a get request to the sheet and insert the following
       }
 ```
 
-For Task 3, I added deduplication logic in my Zapier integration. 
+## Task 3
+
+For Task 3, I added deduplication logic in my Zapier integration.
 The goal here is to check if a lead with the same phone number submits the form again, the system should not create a new lead but instead it should send
- an email notification to alert us that the lead has revisited the form.
+an email notification to alert us that the lead has revisited the form.
 
+I wrote this logic in my GET request in `route.js`
 
-
-I wrote this logic in my GET request in ``` route.js ``` 
-
-the below code snippet checks if the entered number is found in a lead, if so, 
-send out the email notification via MailHog. 
+the below code snippet checks if the entered number is found in a lead, if so,
+send out the email notification via MailHog.
 
 First, the phone number is normalized to strip if of the dashes or parenthesis so is only a number
 
-
 ```
-const isNumberDuplicate = data.results?.some((lead) => 
+const isNumberDuplicate = data.results?.some((lead) =>
             lead.phone?.replace(/\D/g, '') === normalizedNumber
         );
 
@@ -136,5 +141,30 @@ const isNumberDuplicate = data.results?.some((lead) =>
                 console.error('Error sending email:', error);
                 toast.error('An error occurred while sending the email notification');
               }
-        } 
+        }
 ```
+
+## Task 4
+
+From the very beginning (since task 1) I had thought about the design of the webform, how simple and intuitive it must be for the user, yet very mobile responsive and aesthetically pleasing. I also thought about the developer experience as well in case
+another dev is looking at my code, how everything must be intuitive for both the user and the developer. For the user,
+I opted to use tailwindcss styling and toaster notifications so everything looks beautiful, even the error and success messages.
+
+For the developer experience, I chose to use NextJS as it is a popular React based JS library and has a big community support.
+In NextJS, there's a pattern to the SWE experience that other developers are familiar with.
+
+## Task 5
+
+For the SQL queries, I had to think about several things, first of all, I began by identifying the relationships between authors, books, and countries. For the first query, I used a LEFT JOIN between AUTHOR and a combined BOOK–BOOKDETAILS inner join (aliased as BOOK_INFO), ensuring authors without books would still appear with null book values. Then, I added a join with COUNTRY using COUNTRY_ID to include country names.
+
+For authors from the US I performed an INNER JOIN between AUTHOR and COUNTRY, filtering where COUNTRY.CODE = 'USA'. To rank authors by number of books, I aggregated BOOK records by AUTHOR_ID, joined this count to the AUTHOR table, and sorted in descending order.
+
+To count books from US authors, I first filtered US authors as before, joined this with the BOOK table, and applied COUNT(\*). For filtering books by discount, I joined BOOK and BOOKDETAILS, applied a WHERE clause to keep discounts between 20–30, and ordered by price ascending.
+
+Lastly, to get each author’s cheapest book even for those without any—I used a LEFT JOIN between AUTHOR and the combined BOOK–BOOKDETAILS, then grouped by author and used MIN(PRICE) wrapped with COALESCE(..., -1) to substitute -1 when no books existed.
+
+To ensure my SQL queries worked, I create those tables and inserted mock data into them, I then tested them in an online compiler called onecompiler which allowed me to run the queries (CREATE table queries, INSERT queries, and the SELECT queries to query the tables )
+
+I was then able to execute the SQL queries and see the results in a table.
+
+You can see these by visiting: https://onecompiler.com/sqlserver/43sfhh2yq
