@@ -156,7 +156,7 @@ I used the following docs in Further to make those API requests:
 
 2. Generateing a new lead --> https://api-docs.talkfurther.com/#237f80c1-40d8-455b-8903-f312f0e50c34
 
-Now if email OR phone number validation fail, that data is sent into Google Sheets
+Now if email AND phone number validation fail, that data is sent into Google Sheets
 
 Google Sheets is connected to the form via the Apps Script:
 
@@ -217,7 +217,7 @@ As you can see here, the data is sent to GTM after successful form validation
 
 ![Data sent to GTM](./public/images/talkFurtherTakeHomeGTMDataLayerHit.png)
 
-On invalid email or phone number validation, data is inserted into Gooelsheets as you can see here:
+On invalid email AND phone number validation, data is inserted into Gooelsheets as you can see here:
 
 ![Googlesheets Data Insertion](./public/images/talkFurtherTakehomeGoogleSheetsDataInsertion.png)
 
