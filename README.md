@@ -40,6 +40,14 @@ node version 22+
 npm version 11+
 mailhog, install it from this git repo: https://github.com/mailhog/MailHog
 
+To install Mailhog for windows, simply visit this page: https://github.com/mailhog/MailHog/releases/v1.0.0
+
+then scroll down and select either the MailHog_windows_386.exe OR MailHog_windows_amd64.exe
+
+depending on your CPU (Intel or AMD respectively), see below screenshot:
+
+![Mailhog Assets SS](./public/images/MailhogAssets.png)
+
 After installing the above, to confirm, run the following in your terminal:
 
 1. ` node -v`
@@ -56,7 +64,13 @@ To run the app, run `npm run dev`
 
 it will start the server on port 3000, access the page by visiting: http://localhost:3000/
 
-Once you have installed mailhog, if you are on mac, use spotlight search and enter mailhog, if on Windows, enter mailhog in the search next to the Windows icon to open up mailhog.
+Once you have installed mailhog if on Windows, rename the executable to mailhog 
+and add the folder in which the executable is in to the PATH, then kill any existing Powershell session, 
+re-open up Powershell and enter mailhog. It should start the mailhog server. Alternatively, you can search for "mailhog" in the Windows search at the bottom next to the Windows icon, and if you see  the mailhog run command, click that to start
+ the mailhog server. 
+
+
+ if you are on mac, use spotlight search and enter mailhog or run it from the terminal
 
 then in your browser, visit http://localhost:8025
 
