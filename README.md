@@ -5,7 +5,7 @@ This project is a full stack implementation of a lead capture and analytics syst
 
 ---
 
- **Github Repo** -> https://github.com/knached99/talkfurthertakehome.git\
+ **Github Repo** -> https://github.com/knached99/talkfurthertakehome.git 
  
  **Loom Recording** -> https://www.loom.com/share/1f4caf9d1c5f4cc0a7c43fa4fddc5bed
 
