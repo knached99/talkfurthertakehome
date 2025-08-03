@@ -165,6 +165,26 @@ export default function Home(){
           }
 
           const {results: leads = []} = await checkLeadResponse.json();
+
+            /* on successful submission, we will push an event to GTM 
+          which will then send it off to Google Analytics 
+          */
+         window.dataLayer = window.dataLayer || [];
+         window.dataLayer.push({
+          event: 'lead_form_submitted',
+          firstName, 
+          lastName, 
+          email, 
+          phoneNumber, 
+         });
+
+         console.log('Pushing lead_form_submitted event with this data:', {
+          firstName, 
+          lastName, 
+          email, 
+          phoneNumber, 
+
+         });
           
           const leadExists = leads.some(
             
@@ -211,25 +231,7 @@ export default function Home(){
 
           } 
 
-          /* on successful submission, we will push an event to GTM 
-          which will then send it off to Google Analytics 
-          */
-         window.dataLayer = window.dataLayer || [];
-         window.dataLayer.push({
-          event: 'lead_form_submitted',
-          firstName, 
-          lastName, 
-          email, 
-          phoneNumber, 
-         });
-
-         console.log('Pushing lead_form_submitted event with this data:', {
-          firstName, 
-          lastName, 
-          email, 
-          phoneNumber, 
-
-         });
+        
 
          toast.success('Thank you, your information has been sent over to Zapier!');
          setFormData({firstName: '', lastName: '', email: '', phoneNumber: ''});

@@ -167,4 +167,4 @@ To ensure my SQL queries worked, I create those tables and inserted mock data in
 
 I was then able to execute the SQL queries and see the results in a table.
 
-You can see these by visiting: https://onecompiler.com/sqlserver/43sfhh2yq
+You can see these by visiting: https://onecompiler.com/sqlserver/43sjngzsc
