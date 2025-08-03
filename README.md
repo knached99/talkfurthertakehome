@@ -126,7 +126,7 @@ Click Triggering and select Initialization - All Pages (or a specific trigger) t
 
 2. Click on "Add Domain" and enter http://localhost:3000
 
-3) Click on "connect", it will establish a connection between your localhost server and GTM and will then open up a new tab
+3) Click on "connect", it will establish a connection between your localhost server and GTM and will then open up a new tab. Submit the form while connected to GTM
 
 If your Google Tag and Analytics are properly configured, you can view the data streaming in realtime.
 
