@@ -103,8 +103,8 @@ export default function Home(){
 
           toast.error('Please correct the highlighted fields');
 
-          // If email or phone number are invalid, then we send that data over to Google Sheets
-          if(newErrorMessages.email || newErrorMessages.phoneNumber){
+          // If email and phone number are invalid, then we send that data over to Google Sheets
+          if(newErrorMessages.email && newErrorMessages.phoneNumber){
 
             try{
 
