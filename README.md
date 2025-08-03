@@ -1,3 +1,7 @@
+# Github Repo -> https://github.com/knached99/talkfurthertakehome.git
+# Loom Recording -> https://www.loom.com/share/1f4caf9d1c5f4cc0a7c43fa4fddc5bed
+
+
 # Integration Specialist Exercise
 
 This project is a full stack implementation of a lead capture and analytics system built for the Integration Specialist assessment. It involves form creation, event tracking using Google Tag Manager and Analytics, API integration with Zapier and TalkFurther, Google Sheets fallback, and deduplication logic with email notifications.
@@ -16,7 +20,7 @@ This project is a full stack implementation of a lead capture and analytics syst
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Next.js 15.4.4 Using App Router**
 - **Google Tag Manager** & **Google Analytics**
